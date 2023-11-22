@@ -1,0 +1,289 @@
+﻿@model List<webAppPlatzi.Models.Product>
+@{
+    ViewBag.Title = "Platzi Fake Store API";
+    ViewBag.Message = "Your API for your e-commerce or shopping website prototype.";
+
+}
+
+<div class="container">
+    <h2>@ViewBag.Title</h2>
+    <h3>@ViewBag.Message</h3>
+
+    <nav class="navbar navbar-light bg-light">
+        <form class="form-inline">
+            <input id="searchInput" class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
+        </form>
+    </nav>
+    <!-- Button trigger modal -->
+    <button id="btnCr" type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
+        New
+    </button>
+    <br />
+    <br />
+    <div class="row" id="productsContainer">
+        @foreach (var product in Model)
+        {
+            <div class="col-md-4">
+                <div class="card" style="width: 100%; height:100%; border-radius:3vh; border: solid 0.2vh #000; padding:3vh;">
+                    <img src="@product.Images[0]" style="width: 18vh; height:18vh;" class="card-img-top" alt="Product Image">
+                    <div class="card-body">
+                        <h5 class="card-title">@product.Title</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">@product.Price</h6>
+                        <p class="card-text">@product.Description</p>
+                        <button type="button" id="btnVer" onclick="openUpdateModal(@product.Id)" class="btn btn-success">Ver</button>
+                        <button type="button" id="btnUp" onclick="openUpdateModal(@product.Id)" class="btn btn-warning">Update</button>
+                        <button type="button" id="btnDe"onclick="openUpdateModal(@product.Id)" class="btn btn-danger">Delete</button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+
+     <!-- Modal -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Product Details</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p id="smsDelete" style="display:none">¿Seguro que quieres eliminar este producto?</p>
+
+                    <!-- Agrega un identificador al formulario -->
+                    <form id="productForm">
+                        <input type="hidden" id="productId" name="Id" />
+
+                        <div class="form-group">
+                            <label for="inputTitle">Title</label>
+                            <input type="text" class="form-control" id="inputTitle" name="Title" placeholder="Title">
+                        </div>
+                        <div class="form-group">
+                            <label for="inputPrice">Price</label>
+                            <input type="number" class="form-control" id="inputPrice" name="Price" placeholder="Price">
+                        </div>
+                        <div class="form-group">
+                            <label for="inputDescription">Description</label>
+                            <input type="text" class="form-control" id="inputDescription" name="Description" placeholder="Description">
+                        </div>
+                        <div class="custom-file">
+                            <input type="file" class="custom-file-input" id="customImage" name="Images" accept="image/*">
+                            <label class="custom-file-label" for="customImage">Choose image</label>
+                        </div>
+                        <div>
+                            <select id="selectCategory" class="custom-select">
+                                <option selected>Categories</option>
+                                <option value="1">Category 1</option>
+                                <option value="2">Category 2</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button style="display:none" id="btnCreate" type="button" class="btn btn-primary" onclick="createProduct()">Create</button>
+                    <button style="display:none" id="btnUpdate" type="submit" class="btn btn-warning" onclick="updateProduct()">Update</button>
+                    <button style="display:none" id="btnDelete" type="button" class="btn btn-danger" onclick="confirmDelete()">Delete</button>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <br />
+    <address>
+        SASF<br />
+        Sudamericana de Software<br />
+        <abbr title="Phone">Celular:</abbr>
+        0983274298
+    </address>
+
+    <address>
+        <strong>Contacto:</strong> <a href="walther.olivo@sasf.net">walther.olivo@sasf.net</a><br />
+    </address>
+    <script>
+
+        document.getElementById("btnUp").addEventListener("click", function () {
+            document.getElementById("productForm").style.display = "block";
+            document.getElementById("btnDelete").style.display = "none";
+            document.getElementById("btnUpdate").style.display = "block";
+            document.getElementById("btnCreate").style.display = "none";
+            document.getElementById("smsDelete").style.display = "none";
+        });
+
+        document.getElementById("btnDe").addEventListener("click", function () {
+            document.getElementById("productForm").style.display = "none";
+            document.getElementById("btnDelete").style.display = "block";
+            document.getElementById("btnUpdate").style.display = "none";
+            document.getElementById("btnCreate").style.display = "none";
+            document.getElementById("smsDelete").style.display = "block";
+
+        });
+
+        document.getElementById("btnCr").addEventListener("click", function () {
+            document.getElementById("btnUpdate").style.display = "none";
+            document.getElementById("btnDelete").style.display = "none";
+            document.getElementById("btnCreate").style.display = "block";
+            document.getElementById("smsDelete").style.display = "none";
+            document.getElementById("productForm").style.display = "block";
+        });
+
+        document.getElementById("btnVer").addEventListener("click", function () {
+            document.getElementById("btnUpdate").style.display = "none";
+            document.getElementById("btnDelete").style.display = "none";
+            document.getElementById("btnCreate").style.display = "none";
+            document.getElementById("smsDelete").style.display = "none";
+            document.getElementById("productForm").style.display = "block";
+        });
+
+        document.addEventListener("DOMContentLoaded", function () {
+            var searchInput = document.getElementById("searchInput");
+            var productsContainer = document.getElementById("productsContainer");
+
+            // Obtén todas las tarjetas de productos una sola vez
+            var cards = productsContainer.getElementsByClassName("card");
+
+            // Almacena los títulos de las tarjetas para evitar repetidas llamadas al DOM
+            var titles = Array.from(cards).map(function (card) {
+                return card.getElementsByClassName("card-title")[0].innerText.toUpperCase();
+            });
+
+            // Escucha el evento de entrada en el campo de búsqueda
+            searchInput.addEventListener("input", function () {
+                var filter = searchInput.value.toUpperCase();
+
+                for (var i = 0; i < cards.length; i++) {
+                    // Usa el array de títulos en lugar de llamar al DOM en cada iteración
+                    var title = titles[i];
+                    if (title.includes(filter)) {
+                        $(cards[i]).show();
+                    } else {
+                        //   cards[i].style.display = "none";
+                        $(cards[i]).hide();
+                    }
+                }
+            });
+        });
+
+        function createProduct() {
+            var imageUrl = "https://i.ibb.co/bHSrDjd/cell.jpg";
+
+            // Obtiene los datos del formulario
+            var formData = {
+                title: $("#inputTitle").val(),
+                price: $("#inputPrice").val(),
+                description: $("#inputDescription").val(),
+                categoryId: $("#selectCategory").val(),
+               // images: [$("#customImage").val()]
+                images: [imageUrl]
+               // images: []
+            };
+
+            console.log("formData: ");
+            console.log(formData);
+
+            // Realiza la solicitud POST mediante jQuery
+            $.ajax({
+                //url: '@Url.Action("AddProduct", "Home")',
+                url: 'https://api.escuelajs.co/api/v1/products',
+                type: 'POST',
+                contentType: 'application/json; charset=utf-8',
+                data: JSON.stringify(formData),
+                success: function (data) {
+                    console.log("DATA: ");
+                    console.log(data);
+                    console.log('@Url.Action("AddProduct", "Home")');
+
+                    // Muestra el mensaje de éxito o error
+                    alert(data[0]);
+                    $('#exampleModal').modal('hide');
+                },
+                error: function () {
+                    // Maneja los errores (opcional)
+                    console.error('Error al agregar el producto');
+                    // Muestra un mensaje de error al usuario (opcional)
+                    alert('Error al agregar el producto');
+                }
+            });
+        }
+
+        function updateProduct() {
+            var productId = $("#productId").val();
+
+            // Obtén los datos actualizados del formulario
+            var updatedData = {
+                title: $("#inputTitle").val(),
+                price: $("#inputPrice").val(),
+                description: $("#inputDescription").val()
+                // Otros campos según tu modelo
+            };
+
+            // Realiza una solicitud AJAX para actualizar el producto
+            $.ajax({
+                url: 'https://api.escuelajs.co/api/v1/products/' + productId,
+                type: 'PUT',
+                contentType: 'application/json; charset=utf-8',
+                data: JSON.stringify(updatedData),
+                success: function (data) {
+                    console.log(data);
+                    alert(data.success || data.error);
+                    // Cierra el modal después de la actualización
+                    $('#exampleModal').modal('hide');
+                },
+                error: function (error) {
+                    console.error(error);
+                    alert('Error al actualizar el producto');
+                }
+            });
+        }
+
+        function openUpdateModal(productId) {
+            // Realiza una solicitud AJAX para obtener los detalles del producto
+            $.ajax({
+                url: 'https://api.escuelajs.co/api/v1/products/' + productId,
+                type: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    // Llena el modal con los detalles del producto
+                    $("#inputTitle").val(data.title);
+                    $("#inputPrice").val(data.price);
+                    $("#inputDescription").val(data.description);
+                    $("#productId").val(productId);
+                    $('#exampleModal').modal('show');
+                },
+                error: function (error) {
+                    console.error(error);
+                    alert('Error al cargar los detalles del producto');
+                }
+            });
+        }
+
+        function confirmDelete() {
+                // Obtén el ID del producto a eliminar
+                var productId = $("#productId").val();
+
+                // Realiza una solicitud AJAX para eliminar el producto
+                $.ajax({
+                    url: 'https://api.escuelajs.co/api/v1/products/' + productId,
+                    type: 'DELETE',
+                    success: function (data) {
+                        console.log(data);
+                        alert(data.success || data.error);
+                        // Cierra el modal después de la eliminación
+                        $('#exampleModal').modal('hide');
+                    },
+                    error: function (error) {
+                        console.error(error);
+                        alert('Error al eliminar el producto');
+                    }
+                });
+            
+        }
+
+    </script>
+
+</div>
