@@ -1,0 +1,337 @@
+﻿@model ApiPlatzi_.Models.ProductsContainer
+@{
+    ViewBag.Title = "Fake API";
+    ViewBag.Message = "Your API for your e-commerce developed by Dev Joander";
+
+}
+<h2>@ViewBag.Title.</h2>
+<h3>@ViewBag.Message</h3>
+
+<nav class="navbar navbar-light bg-light">
+    <form class="form-inline">
+        <input id="searchInput" class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
+    </form>
+</nav>
+<!-- Button trigger modal -->
+<button id="btnCr" type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal" onclick="ocultarBotonesModal()">New</button>
+<br />
+<br />
+
+<div class="row" id="productsContainer">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Image</th>
+                <th>Title</th>
+                <th>Price</th>
+                <th>Description</th>
+                <th>ID</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var product in Model.Products)
+            {
+                <tr>
+                    <td><img src="@product.images[0]" style="width: 50px; height: 50px;" alt="Product Image"></td>
+                    <td>@product.title</td>
+                    <td>@product.price</td>
+                    <td>@product.description</td>
+                    <td>@product.id</td>
+                    <td>
+                        <button type="button" class="btn btn-success btnVer" onclick="getProductDetailsById(@product.id, 'ver')">See more</button>
+                        <button type="button" class="btn btn-warning btnUp" onclick="getProductDetailsById(@product.id, 'editar')">Update</button>
+                        <button type="button" class="btn btn-danger btnDe" onclick="getProductDetailsById(@product.id, 'eliminar')">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+</div>
+
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="row">
+                    <div class="col-md-12">
+                    <h5 class="modal-title" id="exampleModalLabel">Product Details</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-body">
+                <p id="smsDelete" style="display:none">¿Seguro que quieres eliminar este producto?</p>
+
+                <!-- Agrega un identificador al formulario -->
+                <form id="productForm">
+                    <input type="hidden" id="productId" name="Id" />
+
+                    <div class="form-group">
+                        <label for="inputTitle">Title</label>
+                        <input type="text" class="form-control" id="inputTitle" name="Title" placeholder="Title">
+                    </div>
+                    <div class="form-group">
+                        <label for="inputPrice">Price</label>
+                        <input type="number" class="form-control" id="inputPrice" name="Price" placeholder="Price">
+                    </div>
+                    <div class="form-group">
+                        <label for="inputDescription">Description</label>
+                        <input type="text" class="form-control" id="inputDescription" name="Description" placeholder="Description">
+                    </div>
+                    <div class="custom-file">
+                        <input type="file" class="custom-file-input" id="customImage" name="Images" accept="image/*">
+                        <label class="custom-file-label" for="customImage">Choose image</label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-info btnModalClo" data-dismiss="modal">Close</button>
+                <button id="btnModalCreate" type="button" class="btn btn-primary btnModalCr" onclick="createProduct()">Create</button>
+                <button id="btnModalUpdate" type="button" class="btn btn-warning btnModalUp" onclick="updateProduct()">Update</button>
+                <button id="btnModalDelete" type="button" class="btn btn-danger btnModalDe" onclick="DeleteProductById()">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<br />
+<address>
+    SASF<br />
+    Sudamericana de Software<br />
+    Phone: 0983274298
+</address>
+
+
+<script>
+
+    document.addEventListener("DOMContentLoaded", function () {
+         searchProductByTitle();
+    });
+
+    function mostrarTarjetas(data, filter) {
+        var searchInput = document.getElementById("searchInput");
+        var productsContainer = document.getElementById("productsContainer");
+        var cards = productsContainer.getElementsByClassName("card");
+
+        // Almacena los títulos de las tarjetas para evitar repetidas llamadas al DOM
+        var titles = Array.from(cards).map(function (card) {
+            return card.getElementsByClassName("card-title")[0].innerText.toUpperCase();
+        });
+
+        searchInput.addEventListener("input", function () {
+            var filter = searchInput.value.toUpperCase();
+
+            for (var i = 0; i < cards.length; i++) {
+
+                // Usé el array de títulos en lugar de llamar al DOM en cada iteración
+                var title = titles[i];
+                if (title.includes(filter)) {
+                    $(cards[i]).show();
+                } else {
+                    $(cards[i]).hide();
+                }
+            }
+        });
+
+
+    }
+
+    function searchProductByTitle() {
+        var searchInput = document.getElementById("searchInput");
+
+        // Escucha el evento de entrada en el campo de búsqueda
+        searchInput.addEventListener("input", function () {
+            var filter = searchInput.value.toUpperCase();
+
+             $.ajax({
+                url: '/Home/SearchProducts',
+                type: 'GET',
+                data: { q: filter },
+                dataType: 'json',
+                success: function (data) {
+                    mostrarTarjetas(data, filter);
+                },
+                error: function (error) {
+                    console.error(error);
+                    console.error('Error al realizar la búsqueda');
+                }
+            });
+        });
+    }
+
+    function createProduct() {
+    var imageUrl = "https://i.ibb.co/bHSrDjd/cell.jpg";
+
+    var productData = {
+        title: $("#inputTitle").val(),
+        description: $("#inputDescription").val(),
+        price: $("#inputPrice").val(),
+        discountPercentage: 1.1,
+        rating: 3.3,
+        stock: 9,
+        brand: "brand",
+        category: "smartphones",
+        thumbnail: "https://i.dummyjson.com/data/products/1/thumbnail.jpg",
+        images: [imageUrl]
+
+    };
+    console.log("productData ",productData);
+    $.ajax({
+        url: '@Url.Action("CreateProduct", "Home")',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(productData),
+         success: function (result) {
+             console.log(result);
+             $('#exampleModal').modal('hide');
+            // Después de la creación exitosa, obtener la lista actualizada
+            //$.ajax({
+            //    url: 'https://api.escuelajs.co/api/v1/products',
+            //    type: 'GET',
+            //    success: function (data) {
+            //        // Actualizar la interfaz de usuario con la nueva lista de productos
+            //        //updateProductList(data);
+            //        $('#exampleModal').modal('hide');
+            //    },
+            //    error: function () {
+            //        alert('Error al obtener la lista de productos.');
+            //    }
+            //});
+        },
+        error: function () {
+            // Manejar el error de la creación del producto si es necesario
+            alert('Error al crear el producto.');
+            $('#exampleModal').modal('hide');
+        }
+    });
+    }
+
+    function updateProduct() {
+         var imageUrl = "https://i.ibb.co/bHSrDjd/cell.jpg";
+         var productId = $("#productId").val();
+
+         var productData = {
+             title: $("#inputTitle").val(),
+             description: $("#inputDescription").val(),
+             price: $("#inputPrice").val(),
+             discountPercentage: 1.1,
+             rating: 3.3,
+             stock: 9,
+             brand: "brand",
+             category: "smartphonesssss",
+             thumbnail: "https://i.dummyjson.com/data/products/1/thumbnail.jpg",
+             images: [imageUrl]
+
+         };
+         console.log("productData ",productData);
+        $.ajax({
+             url: '/Home/UpdateProduct/' + productId,
+             type: 'PUT',
+             contentType: 'application/json',
+             data: JSON.stringify(productData),
+              success: function (result) {
+                 console.log(result);
+                  $('#exampleModal').modal('hide');
+             },
+            error: function (xhr, status, error) {
+                $('#exampleModal').modal('hide');
+                console.error(xhr.responseText);
+                console.error(status);
+                console.error(error);
+                alert('Error al actualizar el producto.');
+            }
+         });
+         }
+
+    function getProductDetailsById(productId, contexto) {
+        $.ajax({
+            url: '/Home/GetProductById/' + productId,
+            type: 'GET',
+            dataType: 'json',
+            success: function (data) {
+                console.log(data);
+                // Lleno el modal con los detalles del producto
+                var responseData = JSON.parse(data.respuesta);
+
+                $("#inputTitle").val(responseData.title);
+                $("#inputPrice").val(responseData.price);
+                $("#inputDescription").val(responseData.description);
+                $("#productId").val(productId);
+
+                if (contexto === "ver") {
+                    $(".btnModalCr").hide();
+                    $(".btnModalUp").hide();
+                    $(".btnModalDe").hide();
+                    $("#inputTitle").prop("readonly", true);
+                    $("#inputPrice").prop("readonly", true);
+                    $("#inputDescription").prop("readonly", true);
+                    $('#productForm').show();
+                    $('#smsDelete').hide();
+                } else if (contexto === "editar") {
+                    $(".btnModalCr").hide();
+                    $(".btnModalUp").show();
+                    $(".btnModalDe").hide();
+                    $("#inputTitle").prop("readonly", false);
+                    $("#inputPrice").prop("readonly", false);
+                    $("#inputDescription").prop("readonly", false);
+                    $('#productForm').show();
+                    $('#smsDelete').hide();
+                } else if (contexto === "eliminar") {
+                    $(".btnModalCr").hide();
+                    $(".btnModalUp").hide();
+                    $(".btnModalDe").show();
+                    $('#productForm').hide();
+                    $('#smsDelete').show();
+                }
+
+                $('#exampleModal').modal('show');
+            },
+            error: function (error) {
+                console.error(error.toUpperCase());
+                alert('Error al cargar los detalles del producto');
+            }
+        });
+    }
+
+    function ocultarBotonesModal() {
+        $("#btnModalUpdate, #btnModalDelete").hide();
+        $("#inputTitle").prop("readonly", false);
+        $("#inputPrice").prop("readonly", false);
+        $("#inputDescription").prop("readonly", false);
+        $("#inputTitle").val("");
+        $("#inputPrice").val("");
+        $("#inputDescription").val("");
+        $('#productForm').show();
+        $('#smsDelete').hide();
+        $(".btnModalCr").show();
+    }
+
+    function DeleteProductById() {
+        var productId = $("#productId").val();
+
+        $.ajax({
+            url: '/Home/DeleteProductById/' + productId,
+            type: 'DELETE',
+            success: function (data) {
+                console.log(data);
+                alert(data.success || data.error);
+                $('#exampleModal').modal('hide');
+            },
+            error: function (error) {
+                console.error(error);
+                $('#exampleModal').modal('hide');
+                alert('Error al eliminar el producto');
+            }
+        });
+
+    }
+
+</script>
+
+
