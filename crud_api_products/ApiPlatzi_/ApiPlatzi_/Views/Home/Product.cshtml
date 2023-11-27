@@ -21,27 +21,27 @@
     <table class="table">
         <thead>
             <tr>
-                <th>Image</th>
+                <th>ID</th>
                 <th>Title</th>
                 <th>Price</th>
                 <th>Description</th>
-                <th>ID</th>
+                <th>Image</th>
                 <th>Actions</th>
             </tr>
         </thead>
         <tbody>
             @foreach (var product in Model.Products)
             {
-                <tr>
-                    <td><img src="@product.images[0]" style="width: 50px; height: 50px;" alt="Product Image"></td>
-                    <td>@product.title</td>
+                <tr class="trBody">
+                    <td>@product.id</td>
+                    <td class="tdTitle">@product.title</td>
                     <td>@product.price</td>
                     <td>@product.description</td>
-                    <td>@product.id</td>
+                    <td><img src="@product.images[0]" style="width: 50px; height: 50px;" alt="Product Image"></td>
                     <td>
-                        <button type="button" class="btn btn-success btnVer" onclick="getProductDetailsById(@product.id, 'ver')">See more</button>
-                        <button type="button" class="btn btn-warning btnUp" onclick="getProductDetailsById(@product.id, 'editar')">Update</button>
-                        <button type="button" class="btn btn-danger btnDe" onclick="getProductDetailsById(@product.id, 'eliminar')">Delete</button>
+                        <button type="button" class="btn btn-success btnVer" onclick="getProductDetailsById(@product.id, 'ver')"> <i class="fa-solid fa-magnifying-glass"></i> </button>
+                        <button type="button" class="btn btn-warning btnUp" onclick="getProductDetailsById(@product.id, 'editar')"><i class="fa-solid fa-pen"></i></button>
+                        <button type="button" class="btn btn-danger btnDe" onclick="getProductDetailsById(@product.id, 'eliminar')"><i class="fa-solid fa-trash"></i></button>
                     </td>
                 </tr>
             }
@@ -53,7 +53,7 @@
 
 <!-- Modal -->
 <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <div class="row">
@@ -70,12 +70,23 @@
 
                 <!-- Agrega un identificador al formulario -->
                 <form id="productForm">
-                    <input type="hidden" id="productId" name="Id" />
+                    <div class="container">
 
+                        <div class="row">
+                            <div class="col-lg-6">
+
+                    <div class="form-group">
+                        <label for="inputTitle">Id</label>
+                        <input type="text" class="form-control" id="inputId" name="Id" placeholder="Id" />
+                    </div>
                     <div class="form-group">
                         <label for="inputTitle">Title</label>
                         <input type="text" class="form-control" id="inputTitle" name="Title" placeholder="Title">
                     </div>
+
+                            </div>
+                            <div class="col-lg-6">
+
                     <div class="form-group">
                         <label for="inputPrice">Price</label>
                         <input type="number" class="form-control" id="inputPrice" name="Price" placeholder="Price">
@@ -84,10 +95,15 @@
                         <label for="inputDescription">Description</label>
                         <input type="text" class="form-control" id="inputDescription" name="Description" placeholder="Description">
                     </div>
-                    <div class="custom-file">
+                            </div>
+
+                        </div>
+
+                    </div>
+                    @*<div class="custom-file">
                         <input type="file" class="custom-file-input" id="customImage" name="Images" accept="image/*">
                         <label class="custom-file-label" for="customImage">Choose image</label>
-                    </div>
+                    </div>*@
                 </form>
             </div>
             <div class="modal-footer">
@@ -117,24 +133,23 @@
     function mostrarTarjetas(data, filter) {
         var searchInput = document.getElementById("searchInput");
         var productsContainer = document.getElementById("productsContainer");
-        var cards = productsContainer.getElementsByClassName("card");
+        var trBody = productsContainer.getElementsByClassName("trBody");
 
-        // Almacena los títulos de las tarjetas para evitar repetidas llamadas al DOM
-        var titles = Array.from(cards).map(function (card) {
-            return card.getElementsByClassName("card-title")[0].innerText.toUpperCase();
+        // Almacena los títulos de cada fila para evitar repetidas llamadas al DOM
+        var titles = Array.from(trBody).map(function (tr) {
+            var tdTitle = tr.getElementsByClassName("tdTitle")[0];
+            return tdTitle.innerText.toUpperCase();
         });
 
         searchInput.addEventListener("input", function () {
             var filter = searchInput.value.toUpperCase();
 
-            for (var i = 0; i < cards.length; i++) {
-
-                // Usé el array de títulos en lugar de llamar al DOM en cada iteración
+            for (var i = 0; i < trBody.length; i++) {
                 var title = titles[i];
                 if (title.includes(filter)) {
-                    $(cards[i]).show();
+                    $(trBody[i]).show();
                 } else {
-                    $(cards[i]).hide();
+                    $(trBody[i]).hide();
                 }
             }
         });
@@ -190,22 +205,10 @@
          success: function (result) {
              console.log(result);
              $('#exampleModal').modal('hide');
-            // Después de la creación exitosa, obtener la lista actualizada
-            //$.ajax({
-            //    url: 'https://api.escuelajs.co/api/v1/products',
-            //    type: 'GET',
-            //    success: function (data) {
-            //        // Actualizar la interfaz de usuario con la nueva lista de productos
-            //        //updateProductList(data);
-            //        $('#exampleModal').modal('hide');
-            //    },
-            //    error: function () {
-            //        alert('Error al obtener la lista de productos.');
-            //    }
-            //});
+            
         },
-        error: function () {
-            // Manejar el error de la creación del producto si es necesario
+        error: function (error) {
+            console.log(error);
             alert('Error al crear el producto.');
             $('#exampleModal').modal('hide');
         }
@@ -213,10 +216,10 @@
     }
 
     function updateProduct() {
-         var imageUrl = "https://i.ibb.co/bHSrDjd/cell.jpg";
-         var productId = $("#productId").val();
-
-         var productData = {
+        var imageUrl = "https://i.ibb.co/bHSrDjd/cell.jpg";
+ 
+        var productData = {
+             id: $("#inputId").val(),
              title: $("#inputTitle").val(),
              description: $("#inputDescription").val(),
              price: $("#inputPrice").val(),
@@ -231,8 +234,8 @@
          };
          console.log("productData ",productData);
         $.ajax({
-             url: '/Home/UpdateProduct/' + productId,
-             type: 'PUT',
+             url: '@Url.Action("UpdateProduct", "Home")',
+             type: 'PUT', // El PATCH permite actualizar solo los campos del producto que han cambiado
              contentType: 'application/json',
              data: JSON.stringify(productData),
               success: function (result) {
@@ -241,7 +244,7 @@
              },
             error: function (xhr, status, error) {
                 $('#exampleModal').modal('hide');
-                console.error(xhr.responseText);
+               // console.error(xhr.responseText);
                 console.error(status);
                 console.error(error);
                 alert('Error al actualizar el producto.');
@@ -258,11 +261,10 @@
                 console.log(data);
                 // Lleno el modal con los detalles del producto
                 var responseData = JSON.parse(data.respuesta);
-
+                $("#inputId").val(responseData.id);
                 $("#inputTitle").val(responseData.title);
                 $("#inputPrice").val(responseData.price);
                 $("#inputDescription").val(responseData.description);
-                $("#productId").val(productId);
 
                 if (contexto === "ver") {
                     $(".btnModalCr").hide();
@@ -270,6 +272,7 @@
                     $(".btnModalDe").hide();
                     $("#inputTitle").prop("readonly", true);
                     $("#inputPrice").prop("readonly", true);
+                    $("#inputId").prop("readonly", true);
                     $("#inputDescription").prop("readonly", true);
                     $('#productForm').show();
                     $('#smsDelete').hide();
@@ -280,6 +283,7 @@
                     $("#inputTitle").prop("readonly", false);
                     $("#inputPrice").prop("readonly", false);
                     $("#inputDescription").prop("readonly", false);
+                    $("#inputId").prop("readonly", true);
                     $('#productForm').show();
                     $('#smsDelete').hide();
                 } else if (contexto === "eliminar") {

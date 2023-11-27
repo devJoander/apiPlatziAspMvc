@@ -10,6 +10,7 @@ using System;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Text;
+ 
 
 namespace ApiPlatzi_.Controllers
 {
@@ -18,6 +19,7 @@ namespace ApiPlatzi_.Controllers
         private const string BaseApiUrl = "https://dummyjson.com/products";
         private const string AddProductUrl = BaseApiUrl + "/add";
         private static readonly HttpClient httpClient = new HttpClient();
+        private const string urlSeacrh = "https://dummyjson.com/products/search?q=";
 
         public ActionResult Index()
         {
@@ -31,13 +33,43 @@ namespace ApiPlatzi_.Controllers
             return View(allProducts);
         }
 
+        [HttpPut]
+        public async Task<ActionResult> UpdateProduct(Product product)
+        {
+
+            var url = BaseApiUrl + $"/{product.id}";
+
+            try
+            {
+                var jsonProduct = JsonConvert.SerializeObject(product);
+                var content = new StringContent(jsonProduct, Encoding.UTF8, "application/json");
+
+                var response = await httpClient.PutAsync(url, content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                  var jsonResponse = await response.Content.ReadAsStringAsync();
+                  return Json(new { mensaje = "Datos enviados con éxito", respuesta = jsonResponse });
+                }
+                else
+                {
+                  // Manejar el error de la creación del producto
+                  return Json(new { error = "Error al enviar los datos" });
+                }
+              
+            }
+            catch (Exception e)
+            {
+                return Json(new { error = e.Message });
+            }
+        }
+
         [HttpPost]
         public async Task<JsonResult> CreateProduct(Product product)
         {
              try
             {
-                 {
-
+               
                     var jsonProduct = JsonConvert.SerializeObject(product);
                     var content = new StringContent(jsonProduct, Encoding.UTF8, "application/json");
 
@@ -54,7 +86,7 @@ namespace ApiPlatzi_.Controllers
                         // Manejar el error de la creación del producto
                         return Json(new { error = "Error al enviar los datos" });
                     }
-                }
+                
             }
             catch (Exception e)
             {
@@ -63,60 +95,46 @@ namespace ApiPlatzi_.Controllers
         }
 
         [HttpPut]
-        public async Task<JsonResult> UpdateProduct(Product product)
+        public async Task<ActionResult> UpdateProducts(int id,   Product updatedProduct)
         {
-
-            var url = BaseApiUrl + product.id;
-
-            try
+            using (HttpClient client = new HttpClient())
             {
-                
+                string apiUrl = "https://dummyjson.com/products/" + id;
+                string jsonContent = JsonConvert.SerializeObject(updatedProduct);
+                HttpContent content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+                HttpResponseMessage response = await client.PutAsync(apiUrl, content);
+
+                if (response.IsSuccessStatusCode)
                 {
-
-                    var jsonProduct = JsonConvert.SerializeObject(product);
-                    var content = new StringContent(jsonProduct, Encoding.UTF8, "application/json");
-
-                    var response = await httpClient.PutAsync(url, content);
-
-                    if (response.IsSuccessStatusCode)
-                    {
-                        var jsonResponse = await response.Content.ReadAsStringAsync();
-                        return Json(new { mensaje = "Datos enviados con éxito", respuesta = jsonResponse });
-                    }
-                    else
-                    {
-                        // Manejar el error de la creación del producto
-                        return Json(new { error = "Error al enviar los datos" });
-                    }
+                    // Manejar el éxito (puede devolver un JSON, un mensaje, etc.)
+                    return Json(new { success = true, message = "Producto actualizado con éxito" });
                 }
-            }
-            catch (Exception e)
-            {
-                return Json(new { error = e.Message });
+                else
+                {
+                    // Manejar el error (puede devolver un JSON con información del error, un mensaje, etc.)
+                    return Json(new { success = false, message = "Error al actualizar el producto" });
+                }
             }
         }
 
         [HttpGet]
         public async Task<JsonResult> GetProductById(int id)
-        {
-            string url = $"https://dummyjson.com/products/{id}";
-
+        { 
             try
             {
-                {
-                    var response = await httpClient.GetAsync(url);
 
-                    if (response.IsSuccessStatusCode)
-                    {
-                        var jsonResponse = await response.Content.ReadAsStringAsync();
-                        return Json(new { mensaje = "Datos obtenidos con éxito", respuesta = jsonResponse }, JsonRequestBehavior.AllowGet);
-                    }
-                    else
-                    {
-                        // Manejar el error de la obtención del producto
-                        return Json(new { error = "Error al obtener los datos" });
-                    }
+                var response = await httpClient.GetAsync($"{BaseApiUrl}/{id}");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var jsonResponse = await response.Content.ReadAsStringAsync();
+                    return Json(new { mensaje = "Datos obtenidos con éxito", respuesta = jsonResponse }, JsonRequestBehavior.AllowGet);
                 }
+                else
+                {
+                    return Json(new { error = "Error al obtener los datos" });
+                }
+
             }
             catch (Exception e)
             {
@@ -127,25 +145,22 @@ namespace ApiPlatzi_.Controllers
         [HttpDelete]
         public async Task<JsonResult> DeleteProductById(int id)
         {
-            string url = $"https://dummyjson.com/products/{id}";
+            
 
             try
             {
-      
-                {
-                    var response = await httpClient.DeleteAsync(url);
+                var response = await httpClient.DeleteAsync($"{BaseApiUrl}/{id}");
 
-                    if (response.IsSuccessStatusCode)
-                    {
-                        var jsonResponse = await response.Content.ReadAsStringAsync();
-                        return Json(new { mensaje = "Producto eliminado con éxito", respuesta = jsonResponse });
-                    }
-                    else
-                    {
-                        // Manejar el error de la eliminación del producto
-                        return Json(new { error = "Error al eliminar el producto" });
-                    }
+                if (response.IsSuccessStatusCode)
+                {
+                    var jsonResponse = await response.Content.ReadAsStringAsync();
+                    return Json(new { mensaje = "Producto eliminado con éxito", respuesta = jsonResponse });
                 }
+                else
+                {
+                    return Json(new { error = "Error al eliminar el producto" });
+                }
+               
             }
             catch (Exception e)
             {
@@ -156,26 +171,21 @@ namespace ApiPlatzi_.Controllers
         [HttpGet]
         public async Task<JsonResult> SearchProducts(string q)
         {
-            string url = $"https://dummyjson.com/products/search?q={q}";
-
+ 
             try
             {
-                
+                var response = await httpClient.GetAsync($"{urlSeacrh}{q}");
+                if (response.IsSuccessStatusCode)
                 {
-                    var response = await httpClient.GetAsync(url);
-
-                    if (response.IsSuccessStatusCode)
-                    {
-                        var jsonResponse = await response.Content.ReadAsStringAsync();
-                        var data = JsonConvert.DeserializeObject<ProductsContainer>(jsonResponse);
-                        return Json(new { success = true, data } , JsonRequestBehavior.AllowGet);
-                    }
-                    else
-                    {
-                        // Manejar el error de la búsqueda de productos
-                        return Json(new { success = false, error = "Error al obtener los datos" });
-                    }
+                   var jsonResponse = await response.Content.ReadAsStringAsync();
+                   var data = JsonConvert.DeserializeObject<ProductsContainer>(jsonResponse);
+                   return Json(new { success = true, data } , JsonRequestBehavior.AllowGet);
                 }
+                else
+                {
+                   return Json(new { success = false, error = "Error al obtener los datos" });
+                }
+                
             }
             catch (Exception e)
             {
