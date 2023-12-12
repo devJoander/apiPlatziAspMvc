@@ -205,7 +205,7 @@
          success: function (result) {
              console.log(result);
              $('#exampleModal').modal('hide');
-            
+
         },
         error: function (error) {
             console.log(error);
@@ -216,8 +216,9 @@
     }
 
     function updateProduct() {
-        var imageUrl = "https://i.ibb.co/bHSrDjd/cell.jpg";
- 
+       var imageUrl = "https://i.ibb.co/bHSrDjd/cell.jpg";
+        var productId = $("#inputId").val();
+
         var productData = {
              id: $("#inputId").val(),
              title: $("#inputTitle").val(),
@@ -227,30 +228,29 @@
              rating: 3.3,
              stock: 9,
              brand: "brand",
-             category: "smartphonesssss",
+             category: "smartphones",
              thumbnail: "https://i.dummyjson.com/data/products/1/thumbnail.jpg",
              images: [imageUrl]
 
          };
          console.log("productData ",productData);
-        $.ajax({
-             url: '@Url.Action("UpdateProduct", "Home")',
-             type: 'PUT', // El PATCH permite actualizar solo los campos del producto que han cambiado
-             contentType: 'application/json',
+         $.ajax({
+             url: '@Url.Action("UpdateProduct", "Home")/' + productData.id, // Agrega el ID al final de la URL
+             type: 'PUT',
+             contentType: 'json',
              data: JSON.stringify(productData),
               success: function (result) {
-                 console.log(result);
+                  console.log(result);
                   $('#exampleModal').modal('hide');
+
              },
-            error: function (xhr, status, error) {
-                $('#exampleModal').modal('hide');
-               // console.error(xhr.responseText);
-                console.error(status);
-                console.error(error);
-                alert('Error al actualizar el producto.');
-            }
+             error: function (error) {
+                 console.log(error);
+                 alert('Error al actualizar el producto.');
+                 $('#exampleModal').modal('hide');
+             }
          });
-         }
+     }
 
     function getProductDetailsById(productId, contexto) {
         $.ajax({

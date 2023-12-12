@@ -32,25 +32,28 @@ namespace webAppPlatzi.Controllers
         {
             try
             {
-                // Realiza la solicitud POST a la API externa
-                var httpClient = new HttpClient();
+                using (HttpClient client = new HttpClient())
+                {
 
-                // Convierte el objeto a JSON y crea el contenido de la solicitud
-                var content = new StringContent(JsonConvert.SerializeObject(newProduct), Encoding.UTF8, "application/json");
+                    var jsonProduct = JsonConvert.SerializeObject(newProduct);
+                    var content = new StringContent(jsonProduct, Encoding.UTF8, "application/json");
 
-                // Realiza la solicitud POST con el contenido JSON
-                var response = await httpClient.PostAsync(url, content);
+                    var response = await client.PostAsync(url, content);
 
-                // Verifica el código de estado de la respuesta
-                response.EnsureSuccessStatusCode();
-
-                // El producto se agregó exitosamente, puedes redirigir o hacer algo más
-                return Json(new { success = "Producto agregado exitosamente" });
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var jsonResponse = await response.Content.ReadAsStringAsync();
+                        return Json(new { mensaje = "Datos enviados con éxito", respuesta = jsonResponse });
+                    }
+                    else
+                    {
+                        // Manejar el error de la creación del producto
+                        return Json(new { error = "Error al enviar los datos" });
+                    }
+                }
             }
             catch (Exception ex)
             {
-                // Ocurrió un error al agregar el producto, maneja la situación apropiadamente
-                // Puedes agregar información adicional al ViewBag o Model para mostrar mensajes de error en la vista
                 return Json(new { error = "Error al agregar el producto: " + ex.Message });
             }
         }
@@ -80,7 +83,7 @@ namespace webAppPlatzi.Controllers
             try
             {
                 HttpClient httpClient = new HttpClient();
-                string url = $"https://api.escuelajs.co/api/v1/products/{updatedProduct.Id}";
+                string url = $"https://api.escuelajs.co/api/v1/products/{updatedProduct.id}";
 
                 // Convierte el objeto a JSON y crea el contenido de la solicitud
                 var content = new StringContent(JsonConvert.SerializeObject(updatedProduct), Encoding.UTF8, "application/json");

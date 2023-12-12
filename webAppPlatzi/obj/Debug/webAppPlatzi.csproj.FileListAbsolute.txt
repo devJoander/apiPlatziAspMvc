@@ -98,3 +98,4 @@ C:\Users\wolivo\Documents\devJoander\csharp\webAppPlatzi\webAppPlatzi\obj\Debug\
 C:\Users\wolivo\Documents\devJoander\csharp\webAppPlatzi\webAppPlatzi\obj\Debug\webAppPlatzi.csproj.CopyComplete
 C:\Users\wolivo\Documents\devJoander\csharp\webAppPlatzi\webAppPlatzi\obj\Debug\webAppPlatzi.dll
 C:\Users\wolivo\Documents\devJoander\csharp\webAppPlatzi\webAppPlatzi\obj\Debug\webAppPlatzi.pdb
+C:\Users\wolivo\Documents\devJoander\csharp\webAppPlatzi\webAppPlatzi\obj\Debug\webAppPlatzi.csproj.AssemblyReference.cache

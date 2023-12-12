@@ -34,29 +34,30 @@ namespace ApiPlatzi_.Controllers
         }
 
         [HttpPut]
-        public async Task<ActionResult> UpdateProduct(Product product)
+        //[Route("Home/UpdateProduct/{id}")]
+        public async Task<JsonResult> UpdateProduct(Product product)
         {
-
-            var url = BaseApiUrl + $"/{product.id}";
 
             try
             {
+
                 var jsonProduct = JsonConvert.SerializeObject(product);
                 var content = new StringContent(jsonProduct, Encoding.UTF8, "application/json");
 
-                var response = await httpClient.PutAsync(url, content);
+                //var response = await client.PostAsync(url, content);
+                var response = await httpClient.PutAsync($"{BaseApiUrl}/{product.id}", content).ConfigureAwait(false); // para evitar bloqueos de contexto de sincronización
 
                 if (response.IsSuccessStatusCode)
                 {
-                  var jsonResponse = await response.Content.ReadAsStringAsync();
-                  return Json(new { mensaje = "Datos enviados con éxito", respuesta = jsonResponse });
+                    var jsonResponse = await response.Content.ReadAsStringAsync();
+                    return Json(new { mensaje = "Datos enviados con éxito", respuesta = jsonResponse });
                 }
                 else
                 {
-                  // Manejar el error de la creación del producto
-                  return Json(new { error = "Error al enviar los datos" });
+                    // Manejar el error de la creación del producto
+                    return Json(new { error = "Error al enviar los datos" });
                 }
-              
+
             }
             catch (Exception e)
             {
@@ -95,19 +96,18 @@ namespace ApiPlatzi_.Controllers
         }
 
         [HttpPut]
-        public async Task<ActionResult> UpdateProducts(int id,   Product updatedProduct)
+        public async Task<JsonResult> UpdateProducts(int id, Product updatedProduct)
         {
-            using (HttpClient client = new HttpClient())
-            {
-                string apiUrl = "https://dummyjson.com/products/" + id;
+             {
                 string jsonContent = JsonConvert.SerializeObject(updatedProduct);
-                HttpContent content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
-                HttpResponseMessage response = await client.PutAsync(apiUrl, content);
+                // HttpContent 
+                var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+                var response = await httpClient.PutAsync($"{BaseApiUrl}/{id}", content).ConfigureAwait(false);
 
                 if (response.IsSuccessStatusCode)
                 {
-                    // Manejar el éxito (puede devolver un JSON, un mensaje, etc.)
-                    return Json(new { success = true, message = "Producto actualizado con éxito" });
+                    var jsonResponse = await response.Content.ReadAsStringAsync();
+                    return Json(new { mensaje = "Datos enviados con éxito", respuesta = jsonResponse });
                 }
                 else
                 {

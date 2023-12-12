@@ -25,14 +25,14 @@
         {
             <div class="col-md-4">
                 <div class="card" style="width: 100%; height:100%; border-radius:3vh; border: solid 0.2vh #000; padding:3vh;">
-                    <img src="@product.Images[0]" style="width: 18vh; height:18vh;" class="card-img-top" alt="Product Image">
+                    <img src="@product.images[0]" style="width: 18vh; height:18vh;" class="card-img-top" alt="Product Image">
                     <div class="card-body">
-                        <h5 class="card-title">@product.Title</h5>
-                        <h6 class="card-subtitle mb-2 text-muted">@product.Price</h6>
-                        <p class="card-text">@product.Description</p>
-                        <button type="button" id="btnVer" onclick="openUpdateModal(@product.Id)" class="btn btn-success">Ver</button>
-                        <button type="button" id="btnUp" onclick="openUpdateModal(@product.Id)" class="btn btn-warning">Update</button>
-                        <button type="button" id="btnDe"onclick="openUpdateModal(@product.Id)" class="btn btn-danger">Delete</button>
+                        <h5 class="card-title">@product.title</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">@product.price</h6>
+                        <p class="card-text">@product.description</p>
+                        <button type="button" id="btnVer" onclick="openUpdateModal(@product.id)" class="btn btn-success">Ver</button>
+                        <button type="button" id="btnUp" onclick="openUpdateModal(@product.id)" class="btn btn-warning">Update</button>
+                        <button type="button" id="btnDe"onclick="openUpdateModal(@product.id)" class="btn btn-danger">Delete</button>
                     </div>
                 </div>
             </div>
@@ -177,7 +177,7 @@
                 title: $("#inputTitle").val(),
                 price: $("#inputPrice").val(),
                 description: $("#inputDescription").val(),
-                categoryId: $("#selectCategory").val(),
+               // categoryId: $("#selectCategory").val(),
                // images: [$("#customImage").val()]
                 images: [imageUrl]
                // images: []
@@ -188,8 +188,8 @@
 
             // Realiza la solicitud POST mediante jQuery
             $.ajax({
-                //url: '@Url.Action("AddProduct", "Home")',
-                url: 'https://api.escuelajs.co/api/v1/products',
+                url: '@Url.Action("AddProduct", "Home")',
+               // url: 'https://api.escuelajs.co/api/v1/products',
                 type: 'POST',
                 contentType: 'application/json; charset=utf-8',
                 data: JSON.stringify(formData),

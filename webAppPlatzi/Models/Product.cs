@@ -7,12 +7,13 @@ namespace webAppPlatzi.Models
 {
     public class Product
     {
-        public int Id { get; set; }
-        public string Title { get; set; }
-        public decimal Price { get; set; }
-        public string Description { get; set; }
-        public List<string> Images { get; set; }
-        public Category Category { get; set; }
+        public int id { get; set; }
+        public string title { get; set; }
+        public decimal price { get; set; }
+        public string description { get; set; }
+        public List<string> images { get; set; }
+        public Category categoryId { get; set; } = new Category { Id = 1 , Name = "Clothes", Image = "https://i.imgur.com/QkIa5tT.jpeg" };
 
     }
+
 }
